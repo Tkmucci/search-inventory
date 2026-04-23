@@ -317,6 +317,11 @@ public class ProductInventoryApp {
                         } else {
                             System.out.println("Skipping duplicate ID: " + id);
                         }
+
+                        //give the user an option to view the unformatted data and duplicate data
+                        // if they choose to view it, display the unformatted data and duplicate data in the file
+                        // if they choose not to view it, continue with the next line of the file
+
                     } catch (NumberFormatException e) {
                         System.out.println("Skipping invalid line: " + line);
                     }
