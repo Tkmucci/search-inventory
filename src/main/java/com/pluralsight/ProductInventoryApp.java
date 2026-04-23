@@ -8,8 +8,6 @@ public class ProductInventoryApp {
 
     //Declared all my reusable variables at the top of the class
     static ArrayList<Product> inventory = new ArrayList<>();
-    static ArrayList<Product> unformattedInventory = new ArrayList<>();
-
     static Scanner userInput = new Scanner(System.in);
     static int userChoice;
     static String readFileName;
@@ -30,7 +28,6 @@ public class ProductInventoryApp {
             userChoice = userInput.nextInt();
             userInput.nextLine();
 
-
             //switch statement to handle user input
             switch (userChoice) {
 
@@ -45,7 +42,6 @@ public class ProductInventoryApp {
                     System.exit(0);
                 }
                 default -> System.out.println("Invalid choice: Try again\n");
-
             }
 
             //Pauses the app for a second and waits for the user to press enter before displaying the menu again
@@ -55,20 +51,13 @@ public class ProductInventoryApp {
 
             System.out.println("\n");
         }
-
-
     }
 
     //Method to do the actual displaying of the inventory
     public static void displayInventory() {
 
-
         System.out.println("\nProduct Inventory:");
         if (inventory.isEmpty()) {
-            System.out.println("Inventory is empty!");
-            return;
-        }
-        if (unformattedInventory.isEmpty()) {
             System.out.println("Inventory is empty!");
             return;
         }
@@ -81,18 +70,8 @@ public class ProductInventoryApp {
                     , product.getName()
                     , product.getPrice());
         }
-        for (Product product : unformattedInventory) {
-            System.out.printf("""
-                            %s | %s | %.2f
-                            """
-                    , product.getId()
-                    , product.getName()
-                    , product.getPrice());
-        }
 
-        int totalProducts = inventory.size() + unformattedInventory.size();
-
-        System.out.println("\nTotal products: " + totalProducts);
+        System.out.println("\nTotal products: " + inventory.size());
 
         System.out.println("\n");
         System.out.println("Missing any products? (Y/N)");
@@ -102,9 +81,7 @@ public class ProductInventoryApp {
 
             readMyProductFileToDisplay();
         }
-
     }
-
 
     //Method to populate the inventory with some sample data
     public static void getInventory() {
@@ -142,7 +119,6 @@ public class ProductInventoryApp {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 
     //Method to display the menu options to the user
@@ -157,7 +133,6 @@ public class ProductInventoryApp {
                     4 - Add product
                     5 - Exit
                 Enter Command:\s""");
-
     }
 
     //Method to add a product to the inventory
@@ -180,7 +155,7 @@ public class ProductInventoryApp {
     //Method to look up a product by ID
     public static void lookupProductById() {
 
-        System.out.println("\nEnter the product ID number: ");
+        System.out.print("\nEnter the product ID number: ");
         int userId = userInput.nextInt();
         userInput.nextLine();
         boolean found = false;
@@ -196,13 +171,11 @@ public class ProductInventoryApp {
         if (!found) {
             System.out.println("No product could be found with that ID. Try again.");
         }
-
     }
 
     //Method to search for products by price
     public static void searchByPrice() {
 
-        //method searches for vehicles by Price
 
         //asks user to enter a min price
         System.out.print("\nEnter a minimum price: ");
@@ -233,7 +206,6 @@ public class ProductInventoryApp {
         if (!found) {
             System.out.println("No product could be found within price range. Try again.");
         }
-
     }
 
     //Method to get the next available ID number
@@ -265,7 +237,6 @@ public class ProductInventoryApp {
             System.out.println("Invalid choice: Try again\n");
             addProductOptions();
         }
-
     }
 
 //    public static void readProductFileToDisplay() {
@@ -303,23 +274,23 @@ public class ProductInventoryApp {
         int loadedCount = 0;
 
         // Updated the try catch block to handle if the ID is already in the inventory
-        try (BufferedReader fileReader = new BufferedReader(
+        try (
 
-                new FileReader("src/main/resources/" + readFileName))) {
+                BufferedReader fileReader = new BufferedReader(new FileReader("src/main/resources/" + readFileName))) {
 
             String line;
-            int lineNumber = 0;
+            //int lineNumber = 0;
 
             while ((line = fileReader.readLine()) != null) {
 
                 String[] parts = line.split("\\|");
 
-                // Skip first line
-                lineNumber++;
-
-                if (lineNumber == 1) {
-                    continue;
-                }
+//                // Skip first line
+//                lineNumber++;
+//
+//                if (lineNumber == 1) {
+//                    continue;
+//                }
 
                 if (parts.length == 3) {
                     try {
@@ -328,8 +299,17 @@ public class ProductInventoryApp {
                         double price = Double.parseDouble(parts[2].trim());
 
                         // Check if product with this ID already exists
-                        boolean exists = inventory.stream()
-                                .anyMatch(product -> product.getId() == id);
+                        boolean exists = false;
+
+                        for (Product product : inventory) {
+                            if (product.getId() == id) {
+                                exists = true;
+                                break;
+                            }
+                        }
+
+//                        boolean exists = inventory.stream()
+//                                .anyMatch(product -> product.getId() == id);
 
                         if (!exists) {
                             inventory.add(new Product(id, name, price));
@@ -340,35 +320,9 @@ public class ProductInventoryApp {
                     } catch (NumberFormatException e) {
                         System.out.println("Skipping invalid line: " + line);
                     }
-                } else if (parts.length == 4) {
-                    try {
-                        // Parse: SKU | Product Name | Price | Department
-                        String sku = parts[0].trim();
-                        String name = parts[1].trim();
-                        double price = Double.parseDouble(parts[2].trim());
-                        String department = parts[3].trim();
 
-                        // Use the SKU as a numeric ID (extract numbers or use hashcode)
-                        // Convert SKU to numberic ID (e.g., by hashing or extracting digits)
-                        int id = Math.abs(sku.hashCode()) % 100000;
-
-                        // Check if product already exists by name
-                        boolean exists = unformattedInventory.stream()
-                                .anyMatch(product -> product.getName().equalsIgnoreCase(name));
-                        boolean idExists = unformattedInventory.stream()
-                                .anyMatch(product -> product.getId() == id);
-
-                        if (!exists || !idExists) {
-                            unformattedInventory.add(new Product(id, name, price));
-                            loadedCount++;
-                        } else {
-                            System.out.println("Skipping duplicate product name: " + name);
-                        }
-                    } catch (NumberFormatException e) {
-                        System.out.println("Skipping invalid line: " + line);
-                    }
                 } else {
-                    System.out.println("Skipping malformed line: " + line);
+                    System.out.println("Skipping unformatted data on line: " + line);
                 }
             }
 
@@ -383,7 +337,6 @@ public class ProductInventoryApp {
             System.out.println("Error reading the file. Please try again.");
 
         }
-
     }
 
     //to update the inventory file after adding or removing a product to the inventory
@@ -398,13 +351,6 @@ public class ProductInventoryApp {
                         , product.getPrice()
                 ));
             }
-            for (Product product : unformattedInventory) {
-                fileWriter.write(String.format("%d|%s|%.2f%n"
-                        , product.getId()
-                        , product.getName()
-                        , product.getPrice()
-                ));
-            }
 
             System.out.println("Inventory saved successfully!");
 
@@ -412,5 +358,4 @@ public class ProductInventoryApp {
             System.out.println("Error saving inventory: " + e.getMessage());
         }
     }
-
 }
